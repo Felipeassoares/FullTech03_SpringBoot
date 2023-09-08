@@ -9,7 +9,9 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.capgemini.projetospring.dto.ClienteDTO;
 import com.capgemini.projetospring.dto.ClientePedidosDTO;
+import com.capgemini.projetospring.dto.PedidoClienteDTO;
 import com.capgemini.projetospring.dto.PedidoDTO;
 import com.capgemini.projetospring.models.Cliente;
 import com.capgemini.projetospring.models.Pedido;
@@ -24,6 +26,10 @@ public class PedidoService {
 	
 	@Autowired
 	private ClienteRepository clienteRepository;
+	
+	@Autowired
+	private ClienteService clienteService;
+	
 	
 	public Pedido incluirPedido(Map<String, String> dados) throws ParseException {
 		
@@ -66,6 +72,31 @@ public class PedidoService {
 		
 		return pedido;		
 	}
+	
+	public PedidoClienteDTO incluirPedidoDTO(Map<String, String> dados) throws ParseException {
+		
+		String cpf = dados.get("cpf");
+		String npedido = dados.get("pedido");
+		String data = dados.get("data");
+		
+		Cliente c = clienteRepository.getReferenceById(cpf);
+		ClienteDTO dto = clienteService.buscarCliente(cpf);
+		
+		Date dataPedido = new SimpleDateFormat("yyyy-MM-dd").parse(data);
+		
+		Pedido pedido = new Pedido();
+		pedido.setCliente(c);
+		pedido.setData(dataPedido);
+		pedido.setNumeroPedido(npedido);
+		
+		pedidoRepository.save(pedido);
+		
+		PedidoClienteDTO pedidoDTO = new 
+			PedidoClienteDTO(pedido.getId(), pedido.getData(), pedido.getNumeroPedido(), dto);
+		
+		return pedidoDTO;
+	}
+	
 	
 	// listando os pedidos
 	public List<ClientePedidosDTO> listarPedidos() {
